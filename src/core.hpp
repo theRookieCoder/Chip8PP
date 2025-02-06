@@ -5,10 +5,11 @@
 #include <cstdint>
 #include <fstream>
 #include <functional>
+#include <ranges>
 #include <stack>
 
-constexpr auto DISPLAY_WIDTH = 64;
-constexpr auto DISPLAY_HEIGHT = 32;
+constexpr auto DISPLAY_WIDTH = 128;
+constexpr auto DISPLAY_HEIGHT = 64;
 
 typedef uint8_t Uint8;
 typedef uint16_t Uint16;
@@ -31,12 +32,14 @@ class MachineState {
 
   Uint16 previousKeystate;
 
+  bool highRes;
+
  public:
   std::array<std::array<bool, DISPLAY_HEIGHT>, DISPLAY_WIDTH> displayBuffer;
 
   Uint8 soundTimer;
 
-  MachineState(const std::array<Uint8, 0x50> &font, std::istream &romFile);
+  MachineState(std::istream &romFile);
 
   void tickTimer();
 

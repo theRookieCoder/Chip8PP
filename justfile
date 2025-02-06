@@ -9,3 +9,6 @@ build:
 
 run rom: build
     ./build/Chip8PP "{{ rom }}"
+
+clean:
+    rm -rf build

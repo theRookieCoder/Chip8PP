@@ -27,7 +27,8 @@ class SdlHousekeeper {
     SDL_SetAppMetadata("Chip8++", "1.0", "io.github.theRookieCoder.chip8pp");
     SDL_Init(SDL_INIT_VIDEO);
 
-    SDL_CreateWindowAndRenderer("Chip8++", 1280, 640, 0, &window, &renderer);
+    SDL_CreateWindowAndRenderer("Chip8++", 1280, 640, SDL_WINDOW_RESIZABLE,
+                                &window, &renderer);
     SDL_SetRenderLogicalPresentation(renderer, DISPLAY_WIDTH, DISPLAY_HEIGHT,
                                      SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
@@ -74,9 +75,13 @@ int main(int argc, char* argv[]) {
   }
 
   std::ifstream romFile(argv[1]);
+  if (!romFile) {
+    std::println("Error: Could not read ROM file");
+    return 1;
+  }
 
   SdlHousekeeper sdl;
-  static auto machineState = MachineState(kDefaultFont, romFile);
+  static auto machineState = MachineState(romFile);
 
   constexpr Uint64 time_period = 1'000'000'000 / 60;
   Uint64 previousTick = 0;
