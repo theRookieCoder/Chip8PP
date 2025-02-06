@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
   SDL_Event event{};
   bool quit = false;
   Uint16 heldKeys = 0;
-  srandom(time(NULL));
+  srand(time(NULL));
 
   while (!quit) {
     while (SDL_PollEvent(&event)) {

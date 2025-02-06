@@ -1,3 +1,5 @@
+set windows-shell := ["powershell"]
+
 default: build
 
 cmake preset="debug":

@@ -13,7 +13,6 @@
             "generator": "Unix Makefiles",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_CXX_FLAGS": "-g3 -Og -Wall -Wextra -Wpedantic -fsanitize=address -fno-omit-frame-pointer",
                 "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address -static-libasan -fno-omit-frame-pointer"
             }
@@ -27,6 +26,26 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CXX_FLAGS": "-Ofast -Wall -Wextra -Wpedantic -flto -ffunction-sections -fdata-sections",
                 "CMAKE_EXE_LINKER_FLAGS": "-flto -ffunction-sections -fdata-sections"
+            }
+        },
+        {
+            "name": "debug-windows",
+            "displayName": "Debug (Windows)",
+            "inherits": "debug",
+            "generator": "Visual Studio 17 2022",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "/Zi /O1 /Wall /fsanitize=address /MP",
+                "CMAKE_EXE_LINKER_FLAGS": ""
+            }
+        },
+        {
+            "name": "release-windows",
+            "displayName": "Release (Windows)",
+            "inherits": "debug",
+            "generator": "Visual Studio 17 2022",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "/O2 /Wall /LTCG /MP",
+                "CMAKE_EXE_LINKER_FLAGS": ""
             }
         }
     ]
