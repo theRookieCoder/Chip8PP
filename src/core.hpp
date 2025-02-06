@@ -1,9 +1,17 @@
+#pragma once
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <fstream>
+#include <functional>
+#include <stack>
 
 constexpr auto DISPLAY_WIDTH = 64;
 constexpr auto DISPLAY_HEIGHT = 32;
+
+typedef uint8_t Uint8;
+typedef uint16_t Uint16;
 
 #ifndef CORE_RAM_SIZE
 #define CORE_RAM_SIZE 4096
@@ -11,24 +19,26 @@ constexpr auto DISPLAY_HEIGHT = 32;
 
 class MachineState {
  private:
-  std::array<uint8_t, CORE_RAM_SIZE> ram;
+  std::array<Uint8, CORE_RAM_SIZE> ram;
 
-  uint16_t programCounter;
-  uint16_t indexRegister;
-  std::array<uint8_t, 16> varRegisters;
+  Uint16 programCounter;
+  Uint16 indexRegister;
+  std::array<Uint8, 16> varRegisters;
 
-  std::array<uint16_t, 12> stack;
+  std::stack<Uint16> stack;
 
-  uint8_t delayTimer;
+  Uint8 delayTimer;
 
-  uint16_t previousKeystate;
+  Uint16 previousKeystate;
 
  public:
   std::array<std::array<bool, DISPLAY_HEIGHT>, DISPLAY_WIDTH> displayBuffer;
 
-  uint8_t soundTimer;
+  Uint8 soundTimer;
 
-  MachineState(const std::array<uint8_t, 0x50> &font) {}
+  MachineState(const std::array<Uint8, 0x50> &font, std::istream &romFile);
 
   void tickTimer();
+
+  void tick(std::function<Uint16()> heldKeys, std::function<Uint8()> random);
 };
