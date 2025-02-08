@@ -8,19 +8,18 @@
 #include <ranges>
 #include <stack>
 
-constexpr auto DISPLAY_WIDTH = 128;
-constexpr auto DISPLAY_HEIGHT = 64;
+constexpr auto k_displayWidth = 128;
+constexpr auto k_displayHeight = 64;
+constexpr auto k_ramSize = 4096;
 
+typedef std::array<std::array<bool, k_displayHeight>, k_displayWidth>
+    DisplayBuffer;
 typedef uint8_t Uint8;
 typedef uint16_t Uint16;
 
-#ifndef CORE_RAM_SIZE
-#define CORE_RAM_SIZE 4096
-#endif
-
 class MachineState {
  private:
-  std::array<Uint8, CORE_RAM_SIZE> ram;
+  std::array<Uint8, k_ramSize> ram;
 
   Uint16 programCounter;
   Uint16 indexRegister;
@@ -35,13 +34,14 @@ class MachineState {
   bool highRes;
 
  public:
-  std::array<std::array<bool, DISPLAY_HEIGHT>, DISPLAY_WIDTH> displayBuffer;
+  DisplayBuffer displayBuffer;
 
   Uint8 soundTimer;
 
-  MachineState(std::istream &romFile);
+  MachineState(std::istream &romFile) noexcept;
 
-  void tickTimer();
+  void tickTimer() noexcept;
 
-  void tick(std::function<Uint16()> heldKeys, std::function<Uint8()> random);
+  void tick(std::function<Uint16()> fn_heldKeys,
+            std::function<Uint8()> fn_random) noexcept;
 };

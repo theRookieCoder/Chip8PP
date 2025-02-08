@@ -4,22 +4,22 @@
 
 #include "default_font.hpp"
 
-MachineState::MachineState(std::istream &romFile) {
-  std::ranges::copy(kDefaultFont, &ram[0x50]);
-  std::ranges::copy(kDefaultBigFont, &ram[0xA0]);
+MachineState::MachineState(std::istream &romFile) noexcept {
+  std::ranges::copy(k_defaultFont, &ram[0x50]);
+  std::ranges::copy(k_defaultBigFont, &ram[0xA0]);
 
-  romFile.read((char *)&ram.at(0x200), CORE_RAM_SIZE - 0x200);
+  romFile.read((char *)&ram.at(0x200), k_ramSize - 0x200);
 
   programCounter = 0x200;
 }
 
-void MachineState::tickTimer() {
+void MachineState::tickTimer() noexcept {
   if (delayTimer > 0) delayTimer--;
   if (soundTimer > 0) soundTimer--;
 }
 
 void MachineState::tick(std::function<Uint16()> heldKeys,
-                        std::function<Uint8()> random) {
+                        std::function<Uint8()> random) noexcept {
   /* FETCH */
   const Uint16 instruction =
       (ram[programCounter] << 8) + ram[programCounter + 1];
@@ -104,7 +104,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // 8xy4  Set Vx to (Vx + Vy) with overflow on VF
   else if ((instruction & 0xF00F) == 0x8004) {
-    uint8_t overflowFlag = (VX + VY > 0xFF) ? 1 : 0;
+    Uint8 overflowFlag = (VX + VY > 0xFF) ? 1 : 0;
     VX = VX + VY;
 
     VF = overflowFlag;
@@ -112,14 +112,14 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // 8xy5  Set Vx to (Vx - Vy) with carry on VF
   else if ((instruction & 0xF00F) == 0x8005) {
-    uint8_t carryFlag = VX >= VY ? 1 : 0;
+    Uint8 carryFlag = VX >= VY ? 1 : 0;
     VX = VX - VY;
     VF = carryFlag;
   }
 
   // 8xy7  Set Vx to (Vy - Vx) with carry on VF
   else if ((instruction & 0xF00F) == 0x8007) {
-    uint8_t carryFlag = VY >= VX ? 1 : 0;
+    Uint8 carryFlag = VY >= VX ? 1 : 0;
     VX = VY - VX;
     VF = carryFlag;
   }
@@ -166,15 +166,15 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
   // DxyN  Draw
   else if ((instruction & 0xF000) == 0xD000) {
     if (highRes) {
-      const int x = VX % DISPLAY_WIDTH;
-      const int y = VY % DISPLAY_HEIGHT;
+      const int x = VX % k_displayWidth;
+      const int y = VY % k_displayHeight;
 
       const bool sprite16 = N == 0;
       const int n = sprite16 ? 16 : N;
       VF = 0;
 
       for (const auto i : std::ranges::views::iota(0, n)) {
-        if (y + i >= DISPLAY_HEIGHT) {
+        if (y + i >= k_displayHeight) {
           VF += (n - i);
           break;
         }
@@ -185,7 +185,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
         bool collision = false;
 
         for (const auto j : std::ranges::views::iota(0, 16)) {
-          if (x + j >= DISPLAY_WIDTH) break;
+          if (x + j >= k_displayWidth) break;
 
           const bool pixel = ((spriteRow >> (15 - j)) & 0b1) == 1;
 
@@ -201,17 +201,17 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
 
     } else {
-      const int x = VX % (DISPLAY_WIDTH / 2);
-      const int y = VY % (DISPLAY_HEIGHT / 2);
+      const int x = VX % (k_displayWidth / 2);
+      const int y = VY % (k_displayHeight / 2);
       VF = 0;
 
       for (const auto i : std::ranges::views::iota(0, N)) {
-        if (2 * (y + i) >= DISPLAY_HEIGHT) break;
+        if (2 * (y + i) >= k_displayHeight) break;
 
         const Uint8 spriteRow = ram[indexRegister + i];
 
         for (const auto j : std::ranges::views::iota(0, 8)) {
-          if (2 * (x + j) >= DISPLAY_WIDTH) break;
+          if (2 * (x + j) >= k_displayWidth) break;
 
           if (((spriteRow >> (7 - j)) & 0b1) == 1) {
             if (displayBuffer[2 * (x + j)][2 * (y + i)]) VF = 1;
@@ -262,10 +262,10 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // Fx0A  Wait for key (Vx & 0xF) to be released
   else if ((instruction & 0xF0FF) == 0xF00A) {
-    uint16_t currentHeldKeys = heldKeys();
+    Uint16 currentHeldKeys = heldKeys();
 
     if (currentHeldKeys < previousKeystate) {
-      uint16_t keysDiff = previousKeystate - currentHeldKeys;
+      Uint16 keysDiff = previousKeystate - currentHeldKeys;
       for (int i = 0; i < 16; i++)
         if (keysDiff >> i & 0b1) {
           VX = i;
@@ -334,7 +334,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
     std::move_backward(displayBuffer.begin(), displayBuffer.end() - n,
                        displayBuffer.end());
-    std::fill_n(displayBuffer.begin(), n, std::array<bool, DISPLAY_HEIGHT>());
+    std::fill_n(displayBuffer.begin(), n, std::array<bool, k_displayHeight>());
   }
 
   // 00FC  Scroll display 4 pixels left
@@ -344,7 +344,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
     std::move(displayBuffer.begin() + n, displayBuffer.end(),
               displayBuffer.begin());
     std::fill(displayBuffer.end() - n, displayBuffer.end(),
-              std::array<bool, DISPLAY_HEIGHT>());
+              std::array<bool, k_displayHeight>());
   }
 
   // 00Cn  Scroll n pixels down
