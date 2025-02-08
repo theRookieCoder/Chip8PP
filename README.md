@@ -54,13 +54,13 @@ This project uses CMake, you will need to install CMake, as well as a compatible
 
 You can use [Just](https://just.systems) to make setup and running from the command line easier, or use VS Code with the included build task and debug launch configuration.
 
-1. Cloning
+1. **Cloning**
     ```
-    git clone ──recursive https://github.com/theRookieCoder/Chip8PP
+    git clone --recursive https://github.com/theRookieCoder/Chip8PP
     ```
     Make sure you are cloning the submodules too, since SDL3 is built from source.
 
-2. Setup CMake
+2. **Setup CMake**
     ```
     just cmake [preset]
     ```
@@ -70,7 +70,7 @@ You can use [Just](https://just.systems) to make setup and running from the comm
     - `Debug (Windows)` and `Release (Windows)`  
         For use with Windows and Microsoft Visual C++
 
-3. Build an executable
+3. **Build the Executable**
     ```
     just
     # or
@@ -78,7 +78,7 @@ You can use [Just](https://just.systems) to make setup and running from the comm
     ```
     Build an executable, which is output to `build/Chip8PP` or `build\Chip8PP.exe`. On Windows, the DLLs are automatically moved to the same directory as the executable.
 
-4. Run the executable
+4. **Run the Executable**
     ```
     just run rom_file
     ```
