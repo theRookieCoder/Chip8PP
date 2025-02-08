@@ -70,18 +70,19 @@ constexpr std::array<SDL_Scancode, 16> kKeymap = {
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {
-    std::println("Error: provide a ROM file to load");
+    std::println(std::cerr, "Error: provide a ROM file to load");
     return 1;
   }
 
-  std::ifstream romFile(argv[1]);
+  std::ifstream romFile(argv[1], std::ios_base::binary);
   if (!romFile) {
-    std::println("Error: Could not read ROM file");
+    std::println(std::cerr, "Error: Could not read ROM file: {}",
+                 strerror(errno));
     return 1;
   }
 
   SdlHousekeeper sdl;
-  static auto machineState = MachineState(romFile);
+  static MachineState machineState(romFile);
 
   constexpr Uint64 time_period = 1'000'000'000 / 60;
   Uint64 previousTick = 0;
