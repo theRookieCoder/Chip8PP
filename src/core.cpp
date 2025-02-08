@@ -22,8 +22,8 @@ void MachineState::tickTimer() noexcept {
   if (soundTimer > 0) soundTimer--;
 }
 
-void MachineState::tick(std::function<Uint16()> heldKeys,
-                        std::function<Uint8()> random) noexcept {
+void MachineState::tick(std::function<Uint16()> fn_heldKeys,
+                        std::function<Uint8()> fn_random) noexcept {
   /* FETCH */
   const Uint16 instruction =
       (ram[programCounter] << 8) + ram[programCounter + 1];
@@ -163,7 +163,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // FxNN  Set Vx to a random number ANDed with NN
   else if ((instruction & 0xF000) == 0xC000) {
-    vx = random() & nn;
+    vx = fn_random() & nn;
   }
 
   // DxyN  Draw
@@ -236,12 +236,12 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // Ex9E  Skip if key (Vx & 0xF) is held
   else if ((instruction & 0xF0FF) == 0xE09E) {
-    if ((heldKeys() >> (vx & 0xF)) & 0b1) programCounter += 2;
+    if ((fn_heldKeys() >> (vx & 0xF)) & 0b1) programCounter += 2;
   }
 
   // ExA1  Skip if key (Vx & 0xF) is not held
   else if ((instruction & 0xF0FF) == 0xE0A1) {
-    if (!((heldKeys() >> (vx & 0xF)) & 0b1)) programCounter += 2;
+    if (!((fn_heldKeys() >> (vx & 0xF)) & 0b1)) programCounter += 2;
   }
 
   // Fx07  Set Vx to the value in the delay timer
@@ -266,7 +266,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // Fx0A  Wait for key (Vx & 0xF) to be released
   else if ((instruction & 0xF0FF) == 0xF00A) {
-    const auto currentHeldKeys = heldKeys();
+    const auto currentHeldKeys = fn_heldKeys();
 
     if (currentHeldKeys < previousKeystate) {
       const auto keysDiff = previousKeystate - currentHeldKeys;
@@ -276,6 +276,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
           break;
         };
       previousKeystate = 0;
+
     } else {
       previousKeystate = currentHeldKeys;
       programCounter -= 2;
@@ -289,9 +290,9 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // Fx33  Store Vx as binary-coded-decimal in RAM at I
   else if ((instruction & 0xF0FF) == 0xF033) {
-    ram[(indexRegister + 2)] = (vx / 1) % 10;
-    ram[(indexRegister + 1)] = (vx / 10) % 10;
-    ram[(indexRegister + 0)] = (vx / 100) % 10;
+    ram[indexRegister + 2] = (vx / 1) % 10;
+    ram[indexRegister + 1] = (vx / 10) % 10;
+    ram[indexRegister + 0] = (vx / 100) % 10;
   }
 
   // Fx55  Store variables V0 to Vx in RAM at I
