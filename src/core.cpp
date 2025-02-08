@@ -5,6 +5,9 @@ using namespace core;
 
 #include "default_font.hpp"
 
+
+#define IOTA(n) std::views::iota(0, n)
+
 MachineState::MachineState(std::istream &romFile) noexcept {
   std::ranges::copy(k_defaultFont, &ram[0x50]);
   std::ranges::copy(k_defaultBigFont, &ram[0xA0]);
@@ -174,7 +177,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
       const int n = sprite16 ? 16 : N;
       VF = 0;
 
-      for (const auto i : std::ranges::views::iota(0, n)) {
+      for (const auto &i : IOTA(n)) {
         if (y + i >= k_displayHeight) {
           VF += (n - i);
           break;
@@ -185,7 +188,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
                                           : ram[indexRegister + i] << 8;
         bool collision = false;
 
-        for (const auto j : std::ranges::views::iota(0, 16)) {
+        for (const auto &j : IOTA(16)) {
           if (x + j >= k_displayWidth) break;
 
           const bool pixel = ((spriteRow >> (15 - j)) & 0b1) == 1;
@@ -206,12 +209,12 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
       const int y = VY % (k_displayHeight / 2);
       VF = 0;
 
-      for (const auto i : std::ranges::views::iota(0, N)) {
+      for (const auto &i : IOTA(N)) {
         if (2 * (y + i) >= k_displayHeight) break;
 
         const Uint8 spriteRow = ram[indexRegister + i];
 
-        for (const auto j : std::ranges::views::iota(0, 8)) {
+        for (const auto &j : IOTA(8)) {
           if (2 * (x + j) >= k_displayWidth) break;
 
           if (((spriteRow >> (7 - j)) & 0b1) == 1) {
@@ -267,7 +270,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
     if (currentHeldKeys < previousKeystate) {
       Uint16 keysDiff = previousKeystate - currentHeldKeys;
-      for (int i = 0; i < 16; i++)
+      for (const auto &i : IOTA(16))
         if (keysDiff >> i & 0b1) {
           VX = i;
           break;
@@ -293,12 +296,12 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // Fx55  Store variables V0 to Vx in RAM at I
   else if ((instruction & 0xF0FF) == 0xF055) {
-    for (int i = 0; i <= X; i++) ram[indexRegister + i] = varRegisters[i];
+    for (const auto &i : IOTA(X + 1)) ram[indexRegister + i] = varRegisters[i];
   }
 
   // Fx65  Set variables V0 to Vx from RAM at I
   else if ((instruction & 0xF0FF) == 0xF065) {
-    for (int i = 0; i <= X; i++) varRegisters[i] = ram[indexRegister + i];
+    for (const auto &i : IOTA(X + 1)) varRegisters[i] = ram[indexRegister + i];
   }
 
 
@@ -352,7 +355,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
   else if ((instruction & 0xFFF0) == 0x00C0) {
     const auto n = highRes ? N : N * 2;
 
-    for (auto column : displayBuffer) {
+    for (auto &column : displayBuffer) {
       std::move_backward(column.begin(), column.end() - n, column.end());
       std::fill_n(column.begin(), n, false);
     }
