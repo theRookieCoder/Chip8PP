@@ -17,8 +17,8 @@ class SdlHousekeeper {
   SDL_Renderer* p_renderer;
 
  public:
-  Uint32 onColour = 0x111D2B;
-  Uint32 offColour = 0x8F9185;
+  unsigned int onColour = 0x111D2B;
+  unsigned int offColour = 0x8F9185;
 
   SdlHousekeeper() {
     SDL_SetAppMetadata("Chip8++", "1.0", "io.github.theRookieCoder.chip8pp");
