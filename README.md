@@ -9,40 +9,40 @@ Simple, cross-platform, SUPERCHIP emulator written in C++23 using SDL3.
 
 ```text
 .
-├-- CMakeLists.txt
-|   CMake project and build configuration
-|
-├-- CMakePresets.json
-|   Presets for setting up CMake
-|
-├-- justfile
-|   Common commands for setup, building, and running the project
-|
-├-- .clang-format
-|   Specifications for how to format the code
-|
-├-- src
-|   ├-- main.cpp
-|   |   Initialisation, ROM loading, and the main run loop
-|   |
-|   ├-- core.hpp
-|   ├-- core.cpp
-|   |   Emulator core with the machine state class and ticking methods
-|   |
-|   └-- default_font.hpp
-|       Default small and big fonts
-|
-├-- deps/SDL
-|   Git submodule with the SDL3 sources
-|
-├-- .vscode
-|   ├-- tasks.json
-|   |   Build tasks for VS Code
-|   |
-|   └-- launch.json
-|       Debug launch profile for VS Code
-|
-└-- build
+├── CMakeLists.txt
+│   CMake project and build configuration
+│
+├── CMakePresets.json
+│   Presets for setting up CMake
+│
+├── justfile
+│   Common commands for setup, building, and running the project
+│
+├── .clang-format
+│   Specifications for how to format the code
+│
+├── src
+│   ├── main.cpp
+│   │   Initialisation, ROM loading, and the main run loop
+│   │
+│   ├── core.hpp
+│   ├── core.cpp
+│   │   Emulator core with the machine state class and ticking methods
+│   │
+│   └── default_font.hpp
+│       Default small and big fonts
+│
+├── deps/SDL
+│   Git submodule with the SDL3 sources
+│
+├── .vscode
+│   ├── tasks.json
+│   │   Build tasks for VS Code
+│   │
+│   └── launch.json
+│       Debug launch profile for VS Code
+│
+└── build
     Scratch directory for building
 ```
 
@@ -56,7 +56,7 @@ You can use [Just](https://just.systems) to make setup and running from the comm
 
 1. Cloning
     ```
-    git clone --recursive https://github.com/theRookieCoder/Chip8PP
+    git clone ──recursive https://github.com/theRookieCoder/Chip8PP
     ```
     Make sure you are cloning the submodules too, since SDL3 is built from source.
 
