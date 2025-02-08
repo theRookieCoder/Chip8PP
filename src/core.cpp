@@ -31,15 +31,15 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
 
   /* DECODE */
-  const auto X = (instruction & 0x0F00) >> 8;
-  const auto Y = (instruction & 0x00F0) >> 4;
-  const auto N = instruction & 0x000F;
-  const auto NN = instruction & 0x00FF;
-  const auto NNN = instruction & 0x0FFF;
+  const auto x = (instruction & 0x0F00) >> 8;
+  const auto y = (instruction & 0x00F0) >> 4;
+  const auto n = instruction & 0x000F;
+  const auto nn = instruction & 0x00FF;
+  const auto nnn = instruction & 0x0FFF;
 
-  auto &VX = varRegisters[X];
-  auto &VY = varRegisters[Y];
-  auto &VF = varRegisters[0xF];
+  auto &vx = varRegisters[x];
+  auto &vy = varRegisters[y];
+  auto &vf = varRegisters[0xF];
 
 
   /* EXECUTE */
@@ -57,128 +57,128 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // 1NNN  Jump to address NNN
   else if ((instruction & 0xF000) == 0x1000) {
-    programCounter = NNN;
+    programCounter = nnn;
   }
 
   // 2NNN  Goto subroutine at NNN
   else if ((instruction & 0xF000) == 0x2000) {
     stack.push(programCounter);
-    programCounter = NNN;
+    programCounter = nnn;
   }
 
   // 3xNN  Skip if Vx == NN
   else if ((instruction & 0xF000) == 0x3000) {
-    if (VX == NN) programCounter += 2;
+    if (vx == nn) programCounter += 2;
   }
 
   // 4xNN  Skip if Vx != NN
   else if ((instruction & 0xF000) == 0x4000) {
-    if (VX != NN) programCounter += 2;
+    if (vx != nn) programCounter += 2;
   }
 
   // 5xy0  Skip if Vx == Vy
   else if ((instruction & 0xF000) == 0x5000) {
-    if (VX == VY) programCounter += 2;
+    if (vx == vy) programCounter += 2;
   }
 
   // 9xy0  Skip if Vx != Vy
   else if ((instruction & 0xF000) == 0x9000) {
-    if (VX != VY) programCounter += 2;
+    if (vx != vy) programCounter += 2;
   }
 
   // 8xy0  Set Vx to Vy
   else if ((instruction & 0xF00F) == 0x8000) {
-    VX = VY;
+    vx = vy;
   }
 
   // 8xy1  Set Vx to (Vx OR Vy)
   else if ((instruction & 0xF00F) == 0x8001) {
-    VX |= VY;
+    vx |= vy;
   }
 
   // 8xy2  Set Vx to (Vx AND Vy)
   else if ((instruction & 0xF00F) == 0x8002) {
-    VX &= VY;
+    vx &= vy;
   }
 
   // 8xy3  Set Vx to (Vx XOR Vy)
   else if ((instruction & 0xF00F) == 0x8003) {
-    VX ^= VY;
+    vx ^= vy;
   }
 
   // 8xy4  Set Vx to (Vx + Vy) with overflow on VF
   else if ((instruction & 0xF00F) == 0x8004) {
-    const auto overflowFlag = (VX + VY > 0xFF) ? 1 : 0;
-    VX = VX + VY;
-    VF = overflowFlag;
+    const auto overflowFlag = (vx + vy > 0xFF) ? 1 : 0;
+    vx = vx + vy;
+    vf = overflowFlag;
   }
 
   // 8xy5  Set Vx to (Vx - Vy) with carry on VF
   else if ((instruction & 0xF00F) == 0x8005) {
-    const auto carryFlag = VX >= VY ? 1 : 0;
-    VX = VX - VY;
-    VF = carryFlag;
+    const auto carryFlag = vx >= vy ? 1 : 0;
+    vx = vx - vy;
+    vf = carryFlag;
   }
 
   // 8xy7  Set Vx to (Vy - Vx) with carry on VF
   else if ((instruction & 0xF00F) == 0x8007) {
-    const auto carryFlag = VY >= VX ? 1 : 0;
-    VX = VY - VX;
-    VF = carryFlag;
+    const auto carryFlag = vy >= vx ? 1 : 0;
+    vx = vy - vx;
+    vf = carryFlag;
   }
 
   // 8xy6  Set Vx to (Vy >> 1) with shifted-out bit on VF
   else if ((instruction & 0xF00F) == 0x8006) {
-    const auto shiftedOut = VY & 0b00000001;
-    VX = VX >> 1;
-    VF = shiftedOut;
+    const auto shiftedOut = vy & 0b00000001;
+    vx = vx >> 1;
+    vf = shiftedOut;
   }
 
   // 8xyE  Set Vx to (Vy << 1) with shifted-out bit on VF
   else if ((instruction & 0xF00F) == 0x800E) {
-    const auto shiftedOut = (VY & 0b10000000) >> 7;
-    VX = VX << 1;
-    VF = shiftedOut;
+    const auto shiftedOut = (vy & 0b10000000) >> 7;
+    vx = vx << 1;
+    vf = shiftedOut;
   }
 
   // 6xNN  Set Vx to NN
   else if ((instruction & 0xF000) == 0x6000) {
-    VX = NN;
+    vx = nn;
   }
 
   // 7xNN  Add NN to Vx
   else if ((instruction & 0xF000) == 0x7000) {
-    VX += NN;
+    vx += nn;
   }
 
   // ANNN  Set I to NNN
   else if ((instruction & 0xF000) == 0xA000) {
-    indexRegister = NNN;
+    indexRegister = nnn;
   }
 
   // BNNN  Set PC to (NNN + VX)
   else if ((instruction & 0xF000) == 0xB000) {
-    programCounter = NNN + VX;
+    programCounter = nnn + vx;
   }
 
   // FxNN  Set Vx to a random number ANDed with NN
   else if ((instruction & 0xF000) == 0xC000) {
-    VX = random() & NN;
+    vx = random() & nn;
   }
 
   // DxyN  Draw
   else if ((instruction & 0xF000) == 0xD000) {
     if (highRes) {
-      const int start_x = VX % k_displayWidth;
-      const int start_y = VY % k_displayHeight;
+      const int start_x = vx % k_displayWidth;
+      const int start_y = vy % k_displayHeight;
 
-      const bool sprite16 = (N == 0);
-      const int height = sprite16 ? 16 : N;
-      VF = 0;
+      const bool sprite16 = (n == 0);
+      const int height = sprite16 ? 16 : n;
+      vf = 0;
 
       for (const auto &i : IOTA(height)) {
         if (start_y + i >= k_displayHeight) {
-          VF += (height - i);
+          vf += (height - i);
           break;
         }
 
@@ -200,16 +200,16 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
           }
         }
 
-        if (collision) VF += 1;
+        if (collision) vf += 1;
       }
 
 
     } else {
-      const int start_x = VX % (k_displayWidth / 2);
-      const int start_y = VY % (k_displayHeight / 2);
-      VF = 0;
+      const int start_x = vx % (k_displayWidth / 2);
+      const int start_y = vy % (k_displayHeight / 2);
+      vf = 0;
 
-      for (const auto &i : IOTA(N)) {
+      for (const auto &i : IOTA(n)) {
         if (2 * (start_y + i) >= k_displayHeight) break;
 
         const Uint8 spriteRow = ram[indexRegister + i];
@@ -218,7 +218,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
           if (2 * (start_x + j) >= k_displayWidth) break;
 
           if (((spriteRow >> (7 - j)) & 0b1) == 1) {
-            if (displayBuffer[2 * (start_x + j)][2 * (start_y + i)]) VF = 1;
+            if (displayBuffer[2 * (start_x + j)][2 * (start_y + i)]) vf = 1;
 
             displayBuffer[2 * (start_x + j) + 0][2 * (start_y + i) + 0] =
                 !displayBuffer[2 * (start_x + j) + 0][2 * (start_y + i) + 0];
@@ -236,32 +236,32 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // Ex9E  Skip if key (Vx & 0xF) is held
   else if ((instruction & 0xF0FF) == 0xE09E) {
-    if ((heldKeys() >> (VX & 0xF)) & 0b1) programCounter += 2;
+    if ((heldKeys() >> (vx & 0xF)) & 0b1) programCounter += 2;
   }
 
   // ExA1  Skip if key (Vx & 0xF) is not held
   else if ((instruction & 0xF0FF) == 0xE0A1) {
-    if (!((heldKeys() >> (VX & 0xF)) & 0b1)) programCounter += 2;
+    if (!((heldKeys() >> (vx & 0xF)) & 0b1)) programCounter += 2;
   }
 
   // Fx07  Set Vx to the value in the delay timer
   else if ((instruction & 0xF0FF) == 0xF007) {
-    VX = delayTimer;
+    vx = delayTimer;
   }
 
   // Fx15  Set delay timer to the value in Vx
   else if ((instruction & 0xF0FF) == 0xF015) {
-    delayTimer = VX;
+    delayTimer = vx;
   }
 
   // Fx18  Set sound timer to the value in Vx
   else if ((instruction & 0xF0FF) == 0xF018) {
-    soundTimer = VX;
+    soundTimer = vx;
   }
 
   // Fx1E  Add Vx to I
   else if ((instruction & 0xF0FF) == 0xF01E) {
-    indexRegister += VX;
+    indexRegister += vx;
   }
 
   // Fx0A  Wait for key (Vx & 0xF) to be released
@@ -272,7 +272,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
       const auto keysDiff = previousKeystate - currentHeldKeys;
       for (const auto &i : IOTA(16))
         if (keysDiff >> i & 0b1) {
-          VX = i;
+          vx = i;
           break;
         };
       previousKeystate = 0;
@@ -284,24 +284,24 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // Fx29  Set I to the font character (Vx & 0xF)
   else if ((instruction & 0xF0FF) == 0xF029) {
-    indexRegister = 0x50 + (VX & 0xF) * 5;
+    indexRegister = 0x50 + (vx & 0xF) * 5;
   }
 
   // Fx33  Store Vx as binary-coded-decimal in RAM at I
   else if ((instruction & 0xF0FF) == 0xF033) {
-    ram[(indexRegister + 2)] = (VX / 1) % 10;
-    ram[(indexRegister + 1)] = (VX / 10) % 10;
-    ram[(indexRegister + 0)] = (VX / 100) % 10;
+    ram[(indexRegister + 2)] = (vx / 1) % 10;
+    ram[(indexRegister + 1)] = (vx / 10) % 10;
+    ram[(indexRegister + 0)] = (vx / 100) % 10;
   }
 
   // Fx55  Store variables V0 to Vx in RAM at I
   else if ((instruction & 0xF0FF) == 0xF055) {
-    for (const auto &i : IOTA(X + 1)) ram[indexRegister + i] = varRegisters[i];
+    for (const auto &i : IOTA(x + 1)) ram[indexRegister + i] = varRegisters[i];
   }
 
   // Fx65  Set variables V0 to Vx from RAM at I
   else if ((instruction & 0xF0FF) == 0xF065) {
-    for (const auto &i : IOTA(X + 1)) varRegisters[i] = ram[indexRegister + i];
+    for (const auto &i : IOTA(x + 1)) varRegisters[i] = ram[indexRegister + i];
   }
 
 
@@ -354,7 +354,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // 00Cn  Scroll n pixels down
   else if ((instruction & 0xFFF0) == 0x00C0) {
-    const auto pixels = highRes ? N : N * 2;
+    const auto pixels = highRes ? n : n * 2;
 
     for (auto &column : displayBuffer) {
       std::move_backward(column.begin(), column.end() - pixels, column.end());
@@ -364,7 +364,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // Fx30  Set I to the big font character (Vx & 0xF)
   else if ((instruction & 0xF0FF) == 0xF030) {
-    indexRegister = 0x0A0 + (VX & 0xF) * 10;
+    indexRegister = 0x0A0 + (vx & 0xF) * 10;
   }
 
   else {
