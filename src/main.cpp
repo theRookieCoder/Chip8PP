@@ -8,7 +8,6 @@
 #include <ranges>
 
 #include "core.hpp"
-#include "default_font.hpp"
 
 #define OFF_COLOUR_R 0x8f
 #define OFF_COLOUR_G 0x91

@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.29)
 
-project(Chip8PP)
+project(Chip8PP LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED)
 
 add_subdirectory(deps/SDL REQUIRED)
 
