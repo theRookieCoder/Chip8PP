@@ -2,7 +2,10 @@
 
 Simple, cross-platform, SUPERCHIP emulator written in C++23 using SDL3.
 
-## Structure
+<details>
+    <summary>
+        File Structure
+    </summary>
 
 ```text
 .
@@ -42,6 +45,8 @@ Simple, cross-platform, SUPERCHIP emulator written in C++23 using SDL3.
 └-- build
     Scratch directory for building
 ```
+
+</details>
 
 ## Building
 
