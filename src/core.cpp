@@ -1,3 +1,5 @@
+#pragma warning(disable : 4365)
+
 #include "core.hpp"
 
 #include "default_font.hpp"
@@ -328,38 +330,26 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
 
   // 00FB  Scroll display 4 pixels right
   else if (instruction == 0x00FB) {
-    if (highRes) {
-      std::move_backward(displayBuffer.begin(), displayBuffer.end() - 4,
-                         displayBuffer.end());
-      std::fill(displayBuffer.begin(), displayBuffer.begin() + 4,
-                std::array<bool, DISPLAY_HEIGHT>());
-    } else {
-      std::move_backward(displayBuffer.begin(), displayBuffer.end() - 8,
-                         displayBuffer.end());
-      std::fill(displayBuffer.begin(), displayBuffer.begin() + 8,
-                std::array<bool, DISPLAY_HEIGHT>());
-    }
+    const auto n = highRes ? 4 : 8;
+
+    std::move_backward(displayBuffer.begin(), displayBuffer.end() - n,
+                       displayBuffer.end());
+    std::fill_n(displayBuffer.begin(), n, std::array<bool, DISPLAY_HEIGHT>());
   }
 
   // 00FC  Scroll display 4 pixels left
   else if (instruction == 0x00FC) {
-    if (highRes) {
-      std::move(displayBuffer.begin() + 4, displayBuffer.end(),
-                displayBuffer.begin());
-      std::fill(displayBuffer.end() - 4, displayBuffer.end(),
-                std::array<bool, DISPLAY_HEIGHT>());
-    } else {
-      std::move(displayBuffer.begin() + 8, displayBuffer.end(),
-                displayBuffer.begin());
-      std::fill(displayBuffer.end() - 8, displayBuffer.end(),
-                std::array<bool, DISPLAY_HEIGHT>());
-    }
+    const auto n = highRes ? 4 : 8;
+
+    std::move(displayBuffer.begin() + n, displayBuffer.end(),
+              displayBuffer.begin());
+    std::fill(displayBuffer.end() - n, displayBuffer.end(),
+              std::array<bool, DISPLAY_HEIGHT>());
   }
 
   // 00Cn  Scroll n pixels down
   else if ((instruction & 0xFFF0) == 0x00C0) {
-    auto n = N;
-    if (!highRes) n = N * 2;
+    const auto n = highRes ? N : N * 2;
 
     for (auto column : displayBuffer) {
       std::move_backward(column.begin(), column.end() - n, column.end());
@@ -367,6 +357,7 @@ void MachineState::tick(std::function<Uint16()> heldKeys,
     }
   }
 
+  // Fx30  Set I to the big font character (Vx & 0xF)
   else if ((instruction & 0xF0FF) == 0xF030) {
     indexRegister = 0x0A0 + (VX & 0xF) * 10;
   }

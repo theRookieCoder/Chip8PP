@@ -34,7 +34,7 @@
             "inherits": "debug",
             "generator": "Visual Studio 17 2022",
             "cacheVariables": {
-                "CMAKE_CXX_FLAGS": "/Zi /O1 /Wall /fsanitize=address /MP",
+                "CMAKE_CXX_FLAGS": "/Zi /EHa /O1 /Wall /fsanitize=address /MP",
                 "CMAKE_EXE_LINKER_FLAGS": ""
             }
         },
@@ -44,7 +44,7 @@
             "inherits": "debug",
             "generator": "Visual Studio 17 2022",
             "cacheVariables": {
-                "CMAKE_CXX_FLAGS": "/O2 /Wall /LTCG /MP",
+                "CMAKE_CXX_FLAGS": "/O2 /EHa /Wall /LTCG /MP",
                 "CMAKE_EXE_LINKER_FLAGS": ""
             }
         }
