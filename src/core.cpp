@@ -1,6 +1,7 @@
 #pragma warning(disable : 4365)
 
 #include "core.hpp"
+using namespace core;
 
 #include "default_font.hpp"
 

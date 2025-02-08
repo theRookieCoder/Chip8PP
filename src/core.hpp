@@ -8,6 +8,8 @@
 #include <ranges>
 #include <stack>
 
+namespace core {
+
 constexpr auto k_displayWidth = 128;
 constexpr auto k_displayHeight = 64;
 constexpr auto k_ramSize = 4096;
@@ -45,3 +47,5 @@ class MachineState {
   void tick(std::function<Uint16()> fn_heldKeys,
             std::function<Uint8()> fn_random) noexcept;
 };
+
+}  // namespace core

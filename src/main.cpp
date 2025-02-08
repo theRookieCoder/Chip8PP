@@ -1,6 +1,6 @@
 #include <SDL3/SDL.h>
 
-#include <chrono>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <print>
@@ -8,7 +8,6 @@
 #include <ranges>
 
 #include "core.hpp"
-
 
 #define EXTRACT_COLOUR(colour) \
   (colour >> 16) & 0xFF, (colour >> 8) & 0xFF, colour & 0xFF
@@ -27,8 +26,8 @@ class SdlHousekeeper {
 
     SDL_CreateWindowAndRenderer("Chip8++", 1280, 640, SDL_WINDOW_RESIZABLE,
                                 &p_window, &p_renderer);
-    SDL_SetRenderLogicalPresentation(p_renderer, k_displayWidth,
-                                     k_displayHeight,
+    SDL_SetRenderLogicalPresentation(p_renderer, core::k_displayWidth,
+                                     core::k_displayHeight,
                                      SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     SDL_SetRenderDrawColor(p_renderer, EXTRACT_COLOUR(offColour),
@@ -43,7 +42,7 @@ class SdlHousekeeper {
     SDL_Quit();
   }
 
-  void drawDisplayBuffer(DisplayBuffer& displayBuffer) {
+  void drawDisplayBuffer(core::DisplayBuffer& displayBuffer) {
     SDL_SetRenderDrawColor(p_renderer, EXTRACT_COLOUR(offColour),
                            SDL_ALPHA_OPAQUE);
     SDL_RenderClear(p_renderer);
@@ -61,7 +60,7 @@ class SdlHousekeeper {
 constexpr auto k_instructionsPerFrame = 11;
 constexpr Uint64 k_timePeriodNS = 1'000'000'000 / 60;
 
-constexpr std::array<SDL_Scancode, 16> k_keymap = {
+constexpr std::array<SDL_Scancode, 16> k_keymap{
     SDL_SCANCODE_X, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3,
     SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_A,
     SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_Z, SDL_SCANCODE_C,
@@ -82,7 +81,7 @@ int main(int argc, char* p_argv[]) {
   }
 
   SdlHousekeeper sdl;
-  static MachineState machineState(romFile);
+  static core::MachineState machineState(romFile);
   srand(time(NULL));
 
   Uint64 previousTick = 0;
