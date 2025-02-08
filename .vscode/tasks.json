@@ -1,0 +1,14 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Chip8++",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "build",
+                "--parallel",
+            ]
+        }
+    ]
+}
