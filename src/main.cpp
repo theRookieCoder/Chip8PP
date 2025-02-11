@@ -13,8 +13,8 @@
   (colour >> 16) & 0xFF, (colour >> 8) & 0xFF, colour & 0xFF
 
 class SdlHousekeeper {
-  SDL_Window* p_window;
-  SDL_Renderer* p_renderer;
+  SDL_Window* p_window = nullptr;
+  SDL_Renderer* p_renderer = nullptr;
 
  public:
   unsigned int onColour = 0x111D2B;
@@ -42,7 +42,7 @@ class SdlHousekeeper {
     SDL_Quit();
   }
 
-  void drawDisplayBuffer(core::DisplayBuffer& displayBuffer) {
+  void drawDisplayBuffer(const core::DisplayBuffer& displayBuffer) const {
     SDL_SetRenderDrawColor(p_renderer, EXTRACT_COLOUR(offColour),
                            SDL_ALPHA_OPAQUE);
     SDL_RenderClear(p_renderer);
@@ -82,7 +82,7 @@ int main(int argc, char* p_argv[]) {
 
   SdlHousekeeper sdl;
   static core::MachineState machineState(romFile);
-  srand(time(NULL));
+  srand(time(nullptr));
 
   Uint64 previousTick = 0;
   Uint16 heldKeys = 0;
@@ -106,14 +106,15 @@ int main(int argc, char* p_argv[]) {
           for (const auto& [i, key] : std::views::enumerate(k_keymap))
             if (event.key.scancode == key) heldKeys -= 0b1 << i;
           break;
+
+        default:;
       }
     }
 
     const Uint64 delta = SDL_GetTicksNS() - previousTick;
-    if (delta < k_timePeriodNS)
-      continue;
-    else
-      previousTick += k_timePeriodNS;
+    if (delta < k_timePeriodNS) continue;
+
+    previousTick += k_timePeriodNS;
 
     machineState.tickTimer();
 

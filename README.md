@@ -50,7 +50,7 @@ Simple, cross-platform, SUPERCHIP emulator written in C++23 using SDL3.
 
 ## Building
 
-This project uses CMake, you will need to install CMake, as well as a compatible C++ toolchain such as LLVM Clang, GNU GCC, or MSVC.
+This project uses CMake, you will need to install it as well as a compatible C++ toolchain such as LLVM Clang, GNU GCC, or MSVC.
 
 You can use [Just](https://just.systems) to make setup and running from the command line easier, or use VS Code with the included build task and debug launch configuration.
 

@@ -3,18 +3,19 @@
 #include "core.hpp"
 using namespace core;
 
+#include <algorithm>
+#include <istream>
+
 #include "default_font.hpp"
 
 
 #define IOTA(n) std::views::iota(0, n)
 
-MachineState::MachineState(std::istream &romFile) noexcept {
+MachineState::MachineState(std::istream& romFile) noexcept {
   std::ranges::copy(k_defaultFont, &ram[0x50]);
   std::ranges::copy(k_defaultBigFont, &ram[0xA0]);
 
-  romFile.read((char *)&ram.at(0x200), k_ramSize - 0x200);
-
-  programCounter = 0x200;
+  romFile.read(reinterpret_cast<char*>(&ram.at(0x200)), k_ramSize - 0x200);
 }
 
 void MachineState::tickTimer() noexcept {
@@ -22,8 +23,8 @@ void MachineState::tickTimer() noexcept {
   if (soundTimer > 0) soundTimer--;
 }
 
-void MachineState::tick(std::function<Uint16()> fn_heldKeys,
-                        std::function<Uint8()> fn_random) noexcept {
+void MachineState::tick(const std::function<Uint16()>& fn_heldKeys,
+                        const std::function<Uint8()>& fn_random) noexcept {
   /* FETCH */
   const Uint16 instruction =
       (ram[programCounter] << 8) + ram[programCounter + 1];
@@ -37,9 +38,9 @@ void MachineState::tick(std::function<Uint16()> fn_heldKeys,
   const auto nn = instruction & 0x00FF;
   const auto nnn = instruction & 0x0FFF;
 
-  auto &vx = varRegisters[x];
-  auto &vy = varRegisters[y];
-  auto &vf = varRegisters[0xF];
+  auto& vx = varRegisters[x];
+  const auto vy = varRegisters[y];
+  auto& vf = varRegisters[0xF];
 
 
   /* EXECUTE */
@@ -176,7 +177,7 @@ void MachineState::tick(std::function<Uint16()> fn_heldKeys,
       const int height = sprite16 ? 16 : n;
       vf = 0;
 
-      for (const auto &i : IOTA(height)) {
+      for (const auto& i : IOTA(height)) {
         if (start_y + i >= k_displayHeight) {
           vf += (height - i);
           break;
@@ -187,7 +188,7 @@ void MachineState::tick(std::function<Uint16()> fn_heldKeys,
                                           : ram[indexRegister + i] << 8;
         bool collision = false;
 
-        for (const auto &j : IOTA(16)) {
+        for (const auto& j : IOTA(16)) {
           if (start_x + j >= k_displayWidth) break;
 
           const bool pixel = ((spriteRow >> (15 - j)) & 0b1) == 1;
@@ -202,19 +203,17 @@ void MachineState::tick(std::function<Uint16()> fn_heldKeys,
 
         if (collision) vf += 1;
       }
-
-
     } else {
       const int start_x = vx % (k_displayWidth / 2);
       const int start_y = vy % (k_displayHeight / 2);
       vf = 0;
 
-      for (const auto &i : IOTA(n)) {
+      for (const auto& i : IOTA(n)) {
         if (2 * (start_y + i) >= k_displayHeight) break;
 
         const Uint8 spriteRow = ram[indexRegister + i];
 
-        for (const auto &j : IOTA(8)) {
+        for (const auto& j : IOTA(8)) {
           if (2 * (start_x + j) >= k_displayWidth) break;
 
           if (((spriteRow >> (7 - j)) & 0b1) == 1) {
@@ -270,13 +269,12 @@ void MachineState::tick(std::function<Uint16()> fn_heldKeys,
 
     if (currentHeldKeys < previousKeystate) {
       const auto keysDiff = previousKeystate - currentHeldKeys;
-      for (const auto &i : IOTA(16))
+      for (const auto& i : IOTA(16))
         if (keysDiff >> i & 0b1) {
           vx = i;
           break;
         };
       previousKeystate = 0;
-
     } else {
       previousKeystate = currentHeldKeys;
       programCounter -= 2;
@@ -297,12 +295,12 @@ void MachineState::tick(std::function<Uint16()> fn_heldKeys,
 
   // Fx55  Store variables V0 to Vx in RAM at I
   else if ((instruction & 0xF0FF) == 0xF055) {
-    for (const auto &i : IOTA(x + 1)) ram[indexRegister + i] = varRegisters[i];
+    for (const auto& i : IOTA(x + 1)) ram[indexRegister + i] = varRegisters[i];
   }
 
   // Fx65  Set variables V0 to Vx from RAM at I
   else if ((instruction & 0xF0FF) == 0xF065) {
-    for (const auto &i : IOTA(x + 1)) varRegisters[i] = ram[indexRegister + i];
+    for (const auto& i : IOTA(x + 1)) varRegisters[i] = ram[indexRegister + i];
   }
 
 
@@ -357,7 +355,7 @@ void MachineState::tick(std::function<Uint16()> fn_heldKeys,
   else if ((instruction & 0xFFF0) == 0x00C0) {
     const auto pixels = highRes ? n : n * 2;
 
-    for (auto &column : displayBuffer) {
+    for (auto& column : displayBuffer) {
       std::move_backward(column.begin(), column.end() - pixels, column.end());
       std::fill_n(column.begin(), pixels, false);
     }
