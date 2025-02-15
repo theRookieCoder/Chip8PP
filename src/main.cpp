@@ -1,3 +1,19 @@
+/*
+ * Naming Convention:
+ *
+ * SCREAMING_SNAKE_CASE for macros
+ * UpperCamelCase for classes and structs
+ * lowerCamelCase for variables and functions (including methods)
+ *
+ * Variable prefixes:
+ * (separated from the rest of the identifier by an underscore)
+ *
+ * g  Global variable
+ * p  Pointer
+ * k  Compile-time constant (constexpr)
+ * fn Function pointer
+ */
+
 #include <SDL3/SDL.h>
 
 #include <algorithm>

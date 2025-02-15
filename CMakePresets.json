@@ -1,15 +1,15 @@
 {
-    "version": 8,
+    "version": 6,
     "cmakeMinimumRequired": {
         "major": 3,
-        "minor": 30,
+        "minor": 29,
         "patch": 0
     },
     "configurePresets": [
         {
             "name": "debug",
             "displayName": "Debug",
-            "binaryDir": "${sourceDir}/build",
+            "binaryDir": "${sourceDir}/build-debug",
             "generator": "Unix Makefiles",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
@@ -20,7 +20,7 @@
         {
             "name": "release",
             "displayName": "Release",
-            "binaryDir": "${sourceDir}/build",
+            "binaryDir": "${sourceDir}/build-release",
             "generator": "Unix Makefiles",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
