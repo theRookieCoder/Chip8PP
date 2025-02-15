@@ -52,37 +52,50 @@ Simple, cross-platform, SUPERCHIP emulator written in C++23 using SDL3.
 
 This project uses CMake, you will need to install it as well as a compatible C++ toolchain such as LLVM Clang, GNU GCC, or MSVC.
 
-You can use [Just](https://just.systems) to make setup and running from the command line easier, or use VS Code with the included build task and debug launch configuration.
+You can optionally use [Just](https://just.systems) to make setup and running from the command line easier, or use VS Code with the included build task and debug launch configuration.
+If you are using CLion, make sure you enable the included CMake presets if you would like to use them.
 
-1. **Cloning**
-    ```
-    git clone --recursive https://github.com/theRookieCoder/Chip8PP
-    ```
-    Make sure you are cloning the submodules too, since SDL3 is built from source.
+### Cloning
 
-2. **Setup CMake**
-    ```
-    just cmake [preset]
-    ```
-    Use the `cmake` recipe to generate the build files. The `Debug` or `Debug (Windows)` preset is selected by default depending on your OS. You can also specify a user preset (defined in `CMakeUserPresets.json`), or one of the following presets
-    - `Debug` and `Release`  
-        For use with UNIX platforms such as macOS and Linux
-    - `Debug (Windows)` and `Release (Windows)`  
-        For use with Windows and Microsoft Visual C++
+```shell
+git clone --recursive https://github.com/theRookieCoder/Chip8PP
+```
 
-3. **Build the Executable**
-    ```
-    just
-    # or
-    just build
-    ```
-    Build an executable, which is output to `build/Chip8PP` or `build\Chip8PP.exe`. On Windows, the DLLs are automatically moved to the same directory as the executable.
+_Make sure you are cloning the submodules too_, since SDL3 is built from source.
 
-4. **Run the Executable**
-    ```
-    just run rom_file
-    ```
-    Build and run the executable with the specified `rom_file`.
+### CMake Presets
+
+You can use a user preset (defined in `CMakeUserPresets.json`) or one of the following included presets
+- `debug` and `release`  
+  For use with UNIX platforms such as macOS and Linux
+- `debug-windows` and `release-windows`  
+  For use with Windows and Microsoft Visual C++
+
+### Setup CMake
+
+```shell
+cmake --preset preset-name
+# OR
+just cmake-gen [preset-name]
+```
+
+You can use the `cmake-gen` recipe to generate the build files. The `Debug` or `Debug (Windows)` preset will be selected by default depending on your OS.
+
+### Build an Executable
+
+```shell
+# Debug:
+cmake --build build-debug --parallel
+# OR
+just # aliased to `just build`
+
+# Release:
+cmake --build build-release --parallel
+# OR
+just build-rel
+```
+
+The executable is output to `build-debug/Chip8PP` or `build-release/Chip8PP`. On Windows, the DLLs are automatically moved to the same directory as the executable.
 
 ## Contributing
 
