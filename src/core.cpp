@@ -18,10 +18,12 @@ MachineState::MachineState(std::istream& romFile) noexcept {
   romFile.read(reinterpret_cast<char*>(&ram.at(0x200)), k_ramSize - 0x200);
 }
 
+
 void MachineState::tickTimer() noexcept {
   if (delayTimer > 0) delayTimer--;
   if (soundTimer > 0) soundTimer--;
 }
+
 
 void MachineState::tick(const std::function<Uint16()>& fn_heldKeys,
                         const std::function<Uint8()>& fn_random) noexcept {
@@ -47,7 +49,7 @@ void MachineState::tick(const std::function<Uint16()>& fn_heldKeys,
 
   // 00E0  Clear display
   if (instruction == 0x00E0) {
-    displayBuffer = {};
+    std::ranges::fill(displayBuffer.begin(), displayBuffer.end(), DisplayRow{});
   }
 
   // 00EE  Return from subroutine
@@ -110,14 +112,14 @@ void MachineState::tick(const std::function<Uint16()>& fn_heldKeys,
   // 8xy4  Set Vx to (Vx + Vy) with overflow on VF
   else if ((instruction & 0xF00F) == 0x8004) {
     const auto overflowFlag = (vx + vy > 0xFF) ? 1 : 0;
-    vx = vx + vy;
+    vx += vy;
     vf = overflowFlag;
   }
 
   // 8xy5  Set Vx to (Vx - Vy) with carry on VF
   else if ((instruction & 0xF00F) == 0x8005) {
     const auto carryFlag = vx >= vy ? 1 : 0;
-    vx = vx - vy;
+    vx -= vy;
     vf = carryFlag;
   }
 
@@ -170,63 +172,82 @@ void MachineState::tick(const std::function<Uint16()>& fn_heldKeys,
   // DxyN  Draw
   else if ((instruction & 0xF000) == 0xD000) {
     if (highRes) {
+      // Wrap the initial sprite coordinates
       const int start_x = vx % k_displayWidth;
       const int start_y = vy % k_displayHeight;
 
       const bool sprite16 = (n == 0);
       const int height = sprite16 ? 16 : n;
-      vf = 0;
+      vf = 0;  // Clear the collision flag
 
       for (const auto& i : IOTA(height)) {
+        // Stop drawing once the sprite reaches the bottom of the screen
         if (start_y + i >= k_displayHeight) {
-          vf += (height - i);
+          // Add the number of rows not drawn to the collision flag
+          vf += height - i;
           break;
         }
 
+        // Fetch the sprite from RAM
+        // Pad the last 8 bits with zeroes if drawing an 8-pixel wide sprite
         const Uint16 spriteRow = sprite16 ? (ram[indexRegister + i * 2] << 8) +
                                                 ram[indexRegister + i * 2 + 1]
                                           : ram[indexRegister + i] << 8;
+        // Keep track of collision for this row
         bool collision = false;
 
         for (const auto& j : IOTA(16)) {
+          // Stop drawing once the sprite reaches the right end of the screen
           if (start_x + j >= k_displayWidth) break;
 
+          // Extract the pixel from the sprite row
           const bool pixel = ((spriteRow >> (15 - j)) & 0b1) == 1;
 
           if (pixel) {
+            // Check if the pixel was already on
             if (displayBuffer[start_x + j][start_y + i]) collision = true;
 
+            // Toggle the pixel
             displayBuffer[start_x + j][start_y + i] =
                 !displayBuffer[start_x + j][start_y + i];
           }
         }
 
+        // Increment the collision flag if the row collided
         if (collision) vf += 1;
       }
+
     } else {
       const int start_x = vx % (k_displayWidth / 2);
       const int start_y = vy % (k_displayHeight / 2);
-      vf = 0;
+      vf = 0;  // Clear the collision flag
 
       for (const auto& i : IOTA(n)) {
+        // Stop drawing once the sprite reaches the bottom of the screen
         if (2 * (start_y + i) >= k_displayHeight) break;
 
         const Uint8 spriteRow = ram[indexRegister + i];
 
         for (const auto& j : IOTA(8)) {
+          // Stop drawing once the sprite reaches the right end of the screen
           if (2 * (start_x + j) >= k_displayWidth) break;
 
-          if (((spriteRow >> (7 - j)) & 0b1) == 1) {
-            if (displayBuffer[2 * (start_x + j)][2 * (start_y + i)]) vf = 1;
+          // Extract the pixel from the sprite row
+          const bool pixel = ((spriteRow >> (7 - j)) & 0b1) == 1;
 
-            displayBuffer[2 * (start_x + j) + 0][2 * (start_y + i) + 0] =
-                !displayBuffer[2 * (start_x + j) + 0][2 * (start_y + i) + 0];
-            displayBuffer[2 * (start_x + j) + 0][2 * (start_y + i) + 1] =
-                !displayBuffer[2 * (start_x + j) + 0][2 * (start_y + i) + 1];
-            displayBuffer[2 * (start_x + j) + 1][2 * (start_y + i) + 0] =
-                !displayBuffer[2 * (start_x + j) + 1][2 * (start_y + i) + 0];
-            displayBuffer[2 * (start_x + j) + 1][2 * (start_y + i) + 1] =
-                !displayBuffer[2 * (start_x + j) + 1][2 * (start_y + i) + 1];
+          if (pixel) {
+            const auto x_ = 2 * (start_x + j);
+            const auto y_ = 2 * (start_y + i);
+
+            // Check if the pixel was already on
+            // If so, set the collision flag
+            if (displayBuffer[x_][y_]) vf |= 1;
+
+            // Toggle 2x2 pixels
+            displayBuffer[x_ + 0][y_ + 0] = !displayBuffer[x_ + 0][y_ + 0];
+            displayBuffer[x_ + 0][y_ + 1] = !displayBuffer[x_ + 0][y_ + 1];
+            displayBuffer[x_ + 1][y_ + 0] = !displayBuffer[x_ + 1][y_ + 0];
+            displayBuffer[x_ + 1][y_ + 1] = !displayBuffer[x_ + 1][y_ + 1];
           }
         }
       }
@@ -267,13 +288,15 @@ void MachineState::tick(const std::function<Uint16()>& fn_heldKeys,
   else if ((instruction & 0xF0FF) == 0xF00A) {
     const auto currentHeldKeys = fn_heldKeys();
 
+    // If a key was released,
+    // the current bitflags must be smaller than the previous bitflags
     if (currentHeldKeys < previousKeystate) {
       const auto keysDiff = previousKeystate - currentHeldKeys;
       for (const auto& i : IOTA(16))
         if (keysDiff >> i & 0b1) {
           vx = i;
           break;
-        };
+        }
       previousKeystate = 0;
     } else {
       previousKeystate = currentHeldKeys;
@@ -337,8 +360,7 @@ void MachineState::tick(const std::function<Uint16()>& fn_heldKeys,
 
     std::move_backward(displayBuffer.begin(), displayBuffer.end() - pixels,
                        displayBuffer.end());
-    std::fill_n(displayBuffer.begin(), pixels,
-                std::array<bool, k_displayHeight>());
+    std::fill_n(displayBuffer.begin(), pixels, DisplayRow{});
   }
 
   // 00FC  Scroll display 4 pixels left
@@ -347,8 +369,7 @@ void MachineState::tick(const std::function<Uint16()>& fn_heldKeys,
 
     std::move(displayBuffer.begin() + pixels, displayBuffer.end(),
               displayBuffer.begin());
-    std::fill_n(displayBuffer.end() - pixels, pixels,
-                std::array<bool, k_displayHeight>());
+    std::fill_n(displayBuffer.end() - pixels, pixels, DisplayRow{});
   }
 
   // 00Cn  Scroll n pixels down

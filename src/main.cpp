@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <print>
 #include <random>
 #include <ranges>
 
@@ -76,7 +75,7 @@ class SdlHousekeeper {
 constexpr auto k_instructionsPerFrame = 11;
 constexpr Uint64 k_timePeriodNS = 1'000'000'000 / 60;
 
-constexpr std::array<SDL_Scancode, 16> k_keymap{
+constexpr std::array k_keymap{
     SDL_SCANCODE_X, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3,
     SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_A,
     SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_Z, SDL_SCANCODE_C,
@@ -85,14 +84,13 @@ constexpr std::array<SDL_Scancode, 16> k_keymap{
 
 int main(int argc, char* p_argv[]) {
   if (argc < 2) {
-    std::println(std::cerr, "Error: provide a ROM file to load");
+    std::cerr << "Error: provide a ROM file to load";
     return 1;
   }
 
   std::ifstream romFile(p_argv[1], std::ios_base::binary);
   if (!romFile) {
-    std::println(std::cerr, "Error: Could not read ROM file: {}",
-                 strerror(errno));
+    std::cerr << "Error: Could not read ROM file: " << strerror(errno);
     return 1;
   }
 
@@ -135,7 +133,7 @@ int main(int argc, char* p_argv[]) {
     machineState.tickTimer();
 
     for (const auto& _ : std::array<int, k_instructionsPerFrame>{})
-      machineState.tick([heldKeys]() { return heldKeys; }, rand);
+      machineState.tick([heldKeys] { return heldKeys; }, rand);
 
     sdl.drawDisplayBuffer(machineState.displayBuffer);
 

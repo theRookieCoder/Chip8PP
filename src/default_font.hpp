@@ -3,7 +3,7 @@
 #include <array>
 #include <cstdint>
 
-typedef uint8_t Uint8;
+using Uint8 = uint8_t;
 
 constexpr std::array<Uint8, 0x50> k_defaultFont{
     0xF0, 0x90, 0x90, 0x90, 0xF0,  // 0

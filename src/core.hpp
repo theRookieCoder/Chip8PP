@@ -12,10 +12,10 @@ constexpr auto k_displayWidth = 128;
 constexpr auto k_displayHeight = 64;
 constexpr auto k_ramSize = 4096;
 
-typedef std::array<std::array<bool, k_displayHeight>, k_displayWidth>
-    DisplayBuffer;
-typedef uint8_t Uint8;
-typedef uint16_t Uint16;
+using Uint8 = uint8_t;
+using Uint16 = uint16_t;
+using DisplayRow = std::array<bool, k_displayHeight>;
+using DisplayBuffer = std::array<DisplayRow, k_displayWidth>;
 
 class MachineState {
  private:
