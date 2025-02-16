@@ -17,6 +17,7 @@
 #include <SDL3/SDL.h>
 
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -82,15 +83,24 @@ constexpr std::array k_keymap{
     SDL_SCANCODE_4, SDL_SCANCODE_R, SDL_SCANCODE_F, SDL_SCANCODE_V,
 };
 
-int main(int argc, char* p_argv[]) {
+int main(const int argc, const char* p_argv[]) {
   if (argc < 2) {
-    std::cerr << "Error: provide a ROM file to load";
+    std::cerr << "Error: Provide a ROM file to load" << std::endl;
+    return 1;
+  }
+  if (!std::filesystem::exists(p_argv[1])) {
+    std::cerr << "Error: File does not exist" << std::endl;
+    return 1;
+  }
+  if (!std::filesystem::is_regular_file(p_argv[1])) {
+    std::cerr << "Error: Provided path is not a file" << std::endl;
     return 1;
   }
 
   std::ifstream romFile(p_argv[1], std::ios_base::binary);
   if (!romFile) {
-    std::cerr << "Error: Could not read ROM file: " << strerror(errno);
+    std::cerr << "Error: Could not read ROM file: " << strerror(errno)
+              << std::endl;
     return 1;
   }
 

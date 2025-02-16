@@ -49,7 +49,9 @@ void MachineState::tick(const std::function<Uint16()>& fn_heldKeys,
 
   // 00E0  Clear display
   if (instruction == 0x00E0) {
-    std::ranges::fill(displayBuffer.begin(), displayBuffer.end(), DisplayRow{});
+    // std::ranges::fill(displayBuffer.begin(), displayBuffer.end(),
+    // DisplayRow{});
+    displayBuffer = {};
   }
 
   // 00EE  Return from subroutine
