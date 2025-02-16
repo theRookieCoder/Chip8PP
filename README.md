@@ -1,6 +1,6 @@
 # Chip8++
 
-Simple, cross-platform, SUPERCHIP emulator written in C++23 using SDL3.
+A simple, cross-platform, SUPERCHIP emulator written using modern features from C++23, and uses SDL3 for rendering.
 
 <details>
     <summary>
